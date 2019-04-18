@@ -4,7 +4,7 @@
 #include "tcp_3a.h"
 
 
-static MACHINE_STATUS_TYPE machine_status = MACHINE_STATUS_CONNECT;
+static MACHINE_STATUS_TYPE machine_status = MACHINE_STATUS_INIT;
 
 //=========================================
 
@@ -200,9 +200,39 @@ void set_3a_switch(u8 swh, u8 of)
 
 void get_3a_switch(void)
 {
+	u8 buf[2];
 
+	buf[0] = 0x1;
+	buf[1] = get_output_port();
+
+	send_3a_server(CLIENT_GET_OUT_POINT_ACK, buf, 2);
+
+
+	buf[0] = 0x1;
+	buf[1] = get_check_port();
+	
+	send_3a_server(CLIENT_GET_CHECK_POINT_ACK, buf, 2);
 }
 
+
+void get_iccid(void)
+{
+	u8 buf[10];
+
+	get_local_iccid(buf, sizeof(buf));
+
+	send_3a_server(CLIENT_GET_ICCID_ACK, buf, 2);
+}
+
+
+void sys_id_init(void)
+{
+	u8 buf[100];
+	
+	__sys_id_init(buf);
+
+	memcpy(sys_id, buf, sizeof(sys_id));
+}
 
 //接收3a服务器，并处理
 void tcp_recv_3a_server(void)
@@ -252,11 +282,27 @@ void tcp_recv_3a_server(void)
 
 			case SERVER_GET_ICCID:
 				printf_s("ICCID查询 \r\n");
+
+				get_iccid();
+				
 				break;
 				
 		}
 	}
 
+}
+
+
+void idle_3a_server(void)
+{
+	
+}
+
+void init_3a_server(void)
+{
+	sys_id_init();
+
+	machine_set_status(MACHINE_STATUS_CONNECT);
 }
 
 MACHINE_STATUS_TYPE machine_get_status(void)
@@ -275,6 +321,10 @@ void loop_3a_machine(void)
 {
 	switch(machine_get_status())
 	{
+		case MACHINE_STATUS_INIT:
+			init_3a_server();
+			break;
+			
 		case MACHINE_STATUS_CONNECT:
 			connect_3a_server();
 			break;
@@ -284,7 +334,7 @@ void loop_3a_machine(void)
 			break;
 			
 		case MACHINE_STATUS_IDLE:
-
+			idle_3a_server();
 			break;
 			
 		default:
@@ -294,6 +344,9 @@ void loop_3a_machine(void)
 
 	tcp_recv_3a_server();
 	heart_3a();
+
+	//不知道什么意思
+	//check_switch();
 	
 }
 
