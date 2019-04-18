@@ -58,6 +58,8 @@ void CLR_Buf2(void)
 		Uart2_Buf[k] = 0x00;
 	}
     First_Int = 0;              //接收字符串的起始存储位置
+
+	clean_delay_uart();
 }
 
 /*******************************************************************************
@@ -112,8 +114,8 @@ void Second_AT_Command(char *b,char *a,u8 wait_time)
 				shijian = wait_time;
 				Timer0_start = 1;
 		   }
-    }
- 	  else
+    	}
+ 	  	else
 		{
 			i = 1;
 			Timer0_start = 0;
@@ -125,10 +127,72 @@ void Second_AT_Command(char *b,char *a,u8 wait_time)
 
 
 
+
+/*******************************************************************************
+* 函数名 : Second_AT_Command_Try
+* 描述   : 发送AT指令函数
+* 输入   : 发送数据的指针、发送等待时间(单位：S) 增加超时退出功能
+* 输出   : 
+* 返回   : 
+* 注意   : 
+*******************************************************************************/
+
+u8 Second_AT_Command_Try(char *b,char *a,u8 wait_time)         
+{
+	u8 i;
+	u8 try_num = 0;
+	char *c;
+	c = b;										//保存字符串地址到c
+	CLR_Buf2(); 
+  	i = 0;
+	while(i == 0)                    
+	{
+		if(!Find(a)) 
+		{
+			//printf_s("recv buf: \r\n");
+			//printf_s(Uart2_Buf);
+			//printf_s("\r\n");
+			
+			if(Timer0_start == 0)
+			{
+				b = c;							//将字符串地址给b
+				for (; *b!='\0';b++)
+				{
+					while(USART_GetFlagStatus(USART2, USART_FLAG_TC)==RESET);
+					USART_SendData(USART2,*b);//UART2_SendData(*b);
+				}
+				UART2_SendLR();	
+				Times = 0;
+				shijian = wait_time;
+				Timer0_start = 1;
+
+				try_num ++;
+
+				if(try_num > 3)
+				{
+					Timer0_start = 0;
+					printf_s("try exit ...\r\n");
+					return 0;
+				}
+		   }
+    	}
+ 	  	else
+		{
+			i = 1;
+			Timer0_start = 0;
+		}
+	}
+	CLR_Buf2(); 
+
+	return 1;
+}
+
+
+
 /*******************************************************************************
 * 函数名 : Second_AT_Data
 * 描述   : 发送AT指令函数
-* 输入   : 发送数据的指针、发送等待时间(单位：S)
+* 输入   : 发送数据的指针、发送等待时间(单位：S)  增加超时退出功能
 * 输出   : 
 * 返回   : 
 * 注意   : 
@@ -136,14 +200,20 @@ void Second_AT_Command(char *b,char *a,u8 wait_time)
 void Second_AT_Data(char *b,char *a, u32 len, u8 wait_time)         
 {
 	u8 i, j;
+	u8 try_num = 0;
+	
 	char *c;
 	c = b;										//保存字符串地址到c
 	CLR_Buf2(); 
-  i = 0;
+  	i = 0;
 	while(i == 0)                    
 	{
 		if(!Find(a)) 
 		{
+			//printf_s("recv buf: \r\n");
+			//printf_s(Uart2_Buf);
+			//printf_s("\r\n");
+			
 			if(Timer0_start == 0)
 			{
 				b = c;							//将字符串地址给b
@@ -159,9 +229,18 @@ void Second_AT_Data(char *b,char *a, u32 len, u8 wait_time)
 				Times = 0;
 				shijian = wait_time;
 				Timer0_start = 1;
+
+				try_num ++;
+
+				if(try_num > 3)
+				{
+					Timer0_start = 0;
+					printf_s("try exit ...\r\n");
+					return ;
+				}
 		   }
-    }
- 	  else
+    	}
+ 	  	else
 		{
 			i = 1;
 			Timer0_start = 0;

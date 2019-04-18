@@ -4,6 +4,10 @@
 
 #include "all.h"
 
+
+static vu32 __delay_uart = 0;
+static vu8 _gsm_data_flg = 0;
+
 /*******************************************************************************
 * 函数名  : USART2_IRQHandler
 * 描述    : 串口1中断服务程序
@@ -13,15 +17,51 @@
 *******************************************************************************/
 void USART2_IRQHandler(void)                	
 {
-			u8 Res=0;
-			Res =USART_ReceiveData(USART2);
-			Uart2_Buf[First_Int] = Res;  	  //将接收到的字符串存到缓存中
-			First_Int++;                			//缓存指针向后移动
-			if(First_Int > Buf2_Max)       		//如果缓存满,将缓存指针指向缓存的首地址
-			{
-				First_Int = 0;
-			}    
-} 	
+	u8 Res=0;
+	Res =USART_ReceiveData(USART2);
+	Uart2_Buf[First_Int] = Res;  	  //将接收到的字符串存到缓存中
+	First_Int++;                			//缓存指针向后移动
+	if(First_Int > Buf2_Max)       		//如果缓存满,将缓存指针指向缓存的首地址
+	{
+		First_Int = 0;
+	}
+
+	__delay_uart = 50000;
+	_gsm_data_flg = 1;
+}
+
+
+void clean_delay_uart(void)
+{
+	__delay_uart = 0;
+	_gsm_data_flg = 0;
+}
+
+#define min(x,y) ( (x)>(y)?(y):(x) )
+
+u16 recv_gsm_data(u8 *buf, u16 size)
+{
+	u32 len = min(First_Int, size);
+	
+	if(__delay_uart > 0)
+	{
+		__delay_uart -- ;
+
+		return 0;
+	}
+	else
+	{
+		if(_gsm_data_flg)
+		{
+			_gsm_data_flg = 0;
+
+			memcpy(buf , Uart2_Buf, len);
+
+			return len;
+		}
+		return 0;
+	}
+}
 
 vu16 Heartbeat_time = 90;
 

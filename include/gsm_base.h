@@ -30,6 +30,8 @@ __GSM_BASE_EXT__ vu8 Heart_beat;		//发送心跳帧标志位
 
 
 void set_Heartbeat_time(u8 time);
+void clean_delay_uart(void);
+u16 recv_gsm_data(u8 *buf, u16 size);
 
 
 #endif/*__GSM_BASE_H__*/

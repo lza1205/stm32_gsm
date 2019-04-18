@@ -15,8 +15,14 @@ u8 sys_id[5] = {0x01, 0x02, 0x03, 0x04, 0x5};
 
 void tcp_send(u8 *buf, int len)
 {
-	Second_AT_Command("AT+CIPSEND",">",2);
-	Second_AT_Data((char *)buf,"SEND OK",len, len * 2);;			//回复OK 
+	u8 ret;
+	
+	ret = Second_AT_Command_Try("AT+CIPSEND",">",2);
+
+	if(ret == 1)
+	{
+		Second_AT_Data((char *)buf,"SEND OK",len, len);;			//回复OK 
+	}
 
 	/*
 	测试用的函数
@@ -135,10 +141,11 @@ void heart_3a(void)
 
 void connect_3a_server(void)
 {
-	Connect_Server(SERVER_3A_ADDR);
-	machine_set_status(MACHINE_STATUS_LOGIN);
+	//不需要连接了，登录的时候连接即可
+	//Connect_Server(SERVER_3A_ADDR);
+	//UART1_SendString("连接成功\r\n");
 
-	UART1_SendString("连接成功\r\n");
+	machine_set_status(MACHINE_STATUS_LOGIN);
 
 	set_Heartbeat_time(10);
 }
@@ -152,6 +159,8 @@ void login_3a_server(void)
 	
 	u8 buf[100];
 
+	set_Heartbeat_time(2);
+
 	if((Heart_beat) || (flg == 0))
 	{
 		flg = 1;
@@ -159,10 +168,16 @@ void login_3a_server(void)
 		memcpy(buf, sys_id, sizeof(sys_id));
 		buf[sizeof(sys_id)] = VERSION_3A;
 
+		printf_s("Connect_Server ... \r\n");
+
+		//需要重新连接服务器
+		Connect_Server(SERVER_3A_ADDR);
+
 		printf_s("login_3a_server ... \r\n");
-		
 		send_3a_server(CLIENT_LOGIN, buf, sizeof(sys_id) + 1);
 
+		printf_s("exit  login_3a_server ... \r\n");
+		
 		Heart_beat=0;
 	}
 /*
@@ -305,6 +320,29 @@ void init_3a_server(void)
 	machine_set_status(MACHINE_STATUS_CONNECT);
 }
 
+
+
+void recv_gsm(void)
+{
+	u8 buf[100];
+	u16 ret;
+	
+	ret = recv_gsm_data(buf, sizeof(buf));
+
+	if(ret != 0)
+	{
+		printf_s("recv gsm data : ");
+		printf_s((char *)buf);
+		printf_s("\r\n");
+
+		if(Find("CLOSED"))		//服务器关闭了
+		{
+			//进入重新连接状态
+			machine_set_status(MACHINE_STATUS_CONNECT);
+		}
+	}
+}
+
 MACHINE_STATUS_TYPE machine_get_status(void)
 {
 	return machine_status;
@@ -347,7 +385,8 @@ void loop_3a_machine(void)
 
 	//不知道什么意思
 	//check_switch();
-	
+
+	recv_gsm();
 }
 
 
