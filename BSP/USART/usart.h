@@ -11,6 +11,13 @@ void USART2_Init_Config(u32 bound);
 void UART2_SendString(char* s);
 void UART1_SendLR(void);
 void UART2_SendLR(void);
+void UART1_SendByte(char s);
+void UART1_SendData(u8* s, u32 len);
+
+
+#define printf_s(s)		UART1_SendString(s)
+#define printf_c(c)		UART1_SendByte(c)
+#define printf_data(buf, len)	UART1_SendData(buf, len)
 
 //串口1发送回车换行
 #define UART1_SendLR() UART1_SendString("\r\n")

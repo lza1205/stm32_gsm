@@ -15,6 +15,8 @@
 #include "gsm_base.h"
 #include "tcp_base.h"
 
+#include "all.h"
+
 
 /*******************************************************************************
 * 函数名 : main 
@@ -39,13 +41,17 @@ int main(void)
 	UART1_SendString("GPRS模块注册成功\r\n");
 	UART1_SendString("GPRS模块开始连接服务器\r\n");
 	Set_ATE0();
-	Connect_Server(NULL);
-	UART1_SendString("连接成功\r\n");
+
+	//Connect_Server(NULL);
+	
 	while(1)
 	{
+		loop_3a_machine();
+		/*
 		Rec_Server_Data();
 		
 		tcp_heart_beat();
+		*/
 	}
 }
 

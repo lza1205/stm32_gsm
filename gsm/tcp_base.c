@@ -2,7 +2,7 @@
 
 #define __TCP_BASE_C__
 
-#include "SIM800C.h"
+#include "all.h"
 #include "gsm_base.h"
 
 //TCP Á¬½Ó

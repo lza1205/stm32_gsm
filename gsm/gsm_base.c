@@ -2,6 +2,7 @@
 
 #define __GSM_BASE_C__
 
+#include "all.h"
 
 /*******************************************************************************
 * 函数名  : USART2_IRQHandler
@@ -21,6 +22,13 @@ void USART2_IRQHandler(void)
 				First_Int = 0;
 			}    
 } 	
+
+vu16 Heartbeat_time = 90;
+
+void set_Heartbeat_time(u8 time)
+{
+	Heartbeat_time = time;
+}
 
 /*******************************************************************************
 * 函数名  : TIM2_IRQHandler
@@ -50,7 +58,7 @@ void TIM2_IRQHandler(void)   //TIM3中断
 		}
 		
 		Heartbeat++;
-		if(Heartbeat>9)//每10秒发送心跳帧
+		if(Heartbeat > Heartbeat_time)//每90秒发送心跳帧
 		{
 			Heartbeat=0;
 			Heart_beat=1;

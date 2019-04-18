@@ -2,6 +2,7 @@
 #ifndef __TCP_3A_H__
 #define __TCP_3A_H__
 
+#include "all.h"
 
 #ifdef __TCP_3A_C__
 #define __TCP_3A_EXT__
@@ -9,8 +10,9 @@
 #define __TCP_3A_EXT__ extern
 #endif
 
+//IP登录服务器
 
-#define SERVER_3A_ADDR "AT+CIPSTART=\"TCP\",\"106.13.62.194\",9015";	//IP登录服务器
+#define SERVER_3A_ADDR "AT+CIPSTART=\"TCP\",\"106.13.62.194\",6666"	
 
 
 #define PRO_3A_HEAD_1	0x3a
@@ -54,6 +56,7 @@
 //状态机部分
 typedef enum
 {
+	MACHINE_STATUS_CONNECT,
   	MACHINE_STATUS_LOGIN,
 	MACHINE_STATUS_IDLE,
 
@@ -61,7 +64,24 @@ typedef enum
   MACHINE_STATUS_NUM,
 }MACHINE_STATUS_TYPE;
 
+typedef enum
+{
+	INDEX_HEAD_1 = 0,
+  	INDEX_HEAD_2,
+	INDEX_CMD,
+	INDEX_LEN_1,
+	INDEX_LEN_2,
 
+	INDEX_DATA_1,
+	INDEX_DATA_2,
+	
+}PRO_3A_DATA_INDEX;
+
+__TCP_3A_EXT__ void loop_3a_machine(void);
+
+__TCP_3A_EXT__ void machine_set_status(MACHINE_STATUS_TYPE status);
+
+__TCP_3A_EXT__ MACHINE_STATUS_TYPE machine_get_status(void);
 
 #endif
 
