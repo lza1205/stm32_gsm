@@ -107,7 +107,7 @@ void Second_AT_Command(char *b,char *a,u8 wait_time)
 				for (; *b!='\0';b++)
 				{
 					while(USART_GetFlagStatus(USART2, USART_FLAG_TC)==RESET);
-					USART_SendData(USART2,*b);//UART2_SendData(*b);
+					gsm_base_send(*b);//UART2_SendData(*b);
 				}
 				UART2_SendLR();	
 				Times = 0;
@@ -159,7 +159,7 @@ u8 Second_AT_Command_Try(char *b,char *a,u8 wait_time)
 				for (; *b!='\0';b++)
 				{
 					while(USART_GetFlagStatus(USART2, USART_FLAG_TC)==RESET);
-					USART_SendData(USART2,*b);//UART2_SendData(*b);
+					gsm_base_send(*b);//UART2_SendData(*b);
 				}
 				UART2_SendLR();	
 				Times = 0;
@@ -220,11 +220,11 @@ void Second_AT_Data(char *b,char *a, u32 len, u8 wait_time)
 				for (j = 0; j < len; j++)
 				{
 					while(USART_GetFlagStatus(USART2, USART_FLAG_TC)==RESET);
-					USART_SendData(USART2,*b);//UART2_SendData(*b);
+					gsm_base_send(*b);//UART2_SendData(*b);
 					 b++;
 				}
 				//UART2_SendLR();	
-				USART_SendData(USART2,0x1A);//UART2_SendData(*b);
+				gsm_base_send(0x1A);//UART2_SendData(*b);
 				
 				Times = 0;
 				shijian = wait_time;

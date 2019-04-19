@@ -117,3 +117,10 @@ void TIM2_IRQHandler(void)   //TIM3ÖÐ¶Ï
 }
 
 
+
+void gsm_base_send(char b)
+{
+	USART_SendData(USART2, b);//UART2_SendData(*b);
+}
+
+

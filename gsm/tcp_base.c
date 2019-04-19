@@ -97,3 +97,64 @@ void tcp_heart_beat(void)
 
 
 
+void tcp_send(u8 *buf, int len)
+{
+	u8 ret;
+	
+	ret = Second_AT_Command_Try("AT+CIPSEND",">",2);
+
+	if(ret == 1)
+	{
+		Second_AT_Data((char *)buf,"SEND OK",len, len);;			//回复OK 
+	}
+
+	/*
+	测试用的函数
+	*/
+}
+
+u32 tcp_recv(u8 * buf)
+{
+	u32 ret = 0;
+	u8 offset = 0;
+	char *p;
+	
+	if(strstr(Uart2_Buf,"+IPD")!=NULL)   		//若缓存字符串中含有^SISR
+	{
+		Delay_nMs(100);
+
+		/*
+		printf_s("收到新信息：\r\n");
+
+		printf_s(Uart2_Buf);
+		printf_s("\r\n");
+		*/
+		p = Uart2_Buf;
+		while(1)
+		{
+			offset ++;
+			if(*p == ':')
+			{
+				break;
+			}
+			p ++;
+			
+		}
+		
+		memcpy(buf, Uart2_Buf + offset, First_Int);
+		ret = First_Int - offset;
+/*
+		printf_hex((u8 *)Uart2_Buf, First_Int);
+		printf_s("\r\n");
+		*/
+		
+		CLR_Buf2();
+	}
+
+	return ret;
+	/*
+	测试用的函数
+	*/
+}
+
+
